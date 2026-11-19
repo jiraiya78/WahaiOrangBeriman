@@ -157,6 +157,10 @@
           .map(function (a) {
             var prev =
               mode === "summary" ? guidancePreview(a) : previewText(a);
+            var previewClass =
+              "ayat-row-preview " +
+              prev.cls +
+              (mode === "summary" ? " ayat-row-preview--full" : "");
             return (
               '<button type="button" class="ayat-row" data-ayat-id="' +
               escapeHtml(a.id) +
@@ -167,8 +171,8 @@
               " · " +
               a.ayah +
               "</span>" +
-              '<span class="ayat-row-preview ' +
-              prev.cls +
+              '<span class="' +
+              previewClass +
               '">' +
               escapeHtml(prev.text) +
               "</span>" +

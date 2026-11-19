@@ -365,6 +365,14 @@ body.is-detail .site-footer {
   overflow: hidden;
 }
 
+.ayat-row-preview--full {
+  display: block;
+  -webkit-line-clamp: unset;
+  -webkit-box-orient: unset;
+  overflow: visible;
+  white-space: normal;
+}
+
 .ayat-row-preview.lang-en {
   color: var(--color-english);
 }
