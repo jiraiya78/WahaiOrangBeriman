@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=88b">
+  <link rel="stylesheet" href="css/styles.css?v=88c">
 </head>
 <body>
   <div class="bg-pattern" aria-hidden="true"></div>
@@ -21,24 +21,34 @@
     <p class="site-subtitle">يَا أَيُّهَا الَّذِينَ آمَنُوا · Terjemahan &amp; Ringkasan Ibn Kathir</p>
   </header>
 
-  <div class="toolbar" id="toolbar">
-    <button type="button" class="back-btn" id="back-btn" hidden aria-label="Kembali">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
-      <span>Kembali</span>
-    </button>
-    <div class="view-tabs" id="view-tabs" role="tablist" aria-label="Paparan utama">
-      <button type="button" class="view-tab active" id="tab-list" data-view="list" role="tab" aria-selected="true">Senarai</button>
-      <button type="button" class="view-tab" id="tab-summary" data-view="summary" role="tab" aria-selected="false">Panduan</button>
+  <div class="chrome-sticky" id="chrome-sticky">
+    <div class="toolbar" id="toolbar">
+      <button type="button" class="back-btn" id="back-btn" hidden aria-label="Kembali">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        <span>Kembali</span>
+      </button>
+      <div class="view-tabs" id="view-tabs" role="tablist" aria-label="Paparan utama">
+        <button type="button" class="view-tab active" id="tab-list" data-view="list" role="tab" aria-selected="true">Senarai</button>
+        <button type="button" class="view-tab" id="tab-summary" data-view="summary" role="tab" aria-selected="false">Panduan</button>
+      </div>
+      <div class="lang-toggles" role="group" aria-label="Paparan bahasa">
+        <label class="lang-toggle">
+          <input type="checkbox" id="toggle-bm" checked>
+          <span>BM</span>
+        </label>
+        <label class="lang-toggle">
+          <input type="checkbox" id="toggle-en" checked>
+          <span>EN</span>
+        </label>
+      </div>
     </div>
-    <div class="lang-toggles" role="group" aria-label="Paparan bahasa">
-      <label class="lang-toggle">
-        <input type="checkbox" id="toggle-bm" checked>
-        <span>BM</span>
+
+    <div class="search-bar" id="search-bar">
+      <label class="search-field" for="search-input">
+        <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="search" id="search-input" placeholder="Cari surah, ayat, kata…" autocomplete="off" enterkeyhint="search" inputmode="search">
       </label>
-      <label class="lang-toggle">
-        <input type="checkbox" id="toggle-en" checked>
-        <span>EN</span>
-      </label>
+      <button type="button" class="search-clear" id="search-clear" hidden aria-label="Kosongkan carian">✕</button>
     </div>
   </div>
 
@@ -51,6 +61,6 @@
   </footer>
 
   <script src="js/data/ayat.js?v=88"></script>
-  <script src="js/app.js?v=88b"></script>
+  <script src="js/app.js?v=88c"></script>
 </body>
 </html>

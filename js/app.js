@@ -15,8 +15,11 @@
     ayatId: null,
     listScrollY: 0,
     summaryScrollY: 0,
+    query: "",
     lang: { bm: true, en: true }
   };
+
+  var searchTimer = null;
 
   /* ── Utilities ─────────────────────────────────────────────── */
 
@@ -39,10 +42,57 @@
     return null;
   }
 
-  function groupBySurah() {
+  function normalizeQuery(q) {
+    return String(q || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+  }
+
+  function ayatMatches(ayat, q) {
+    if (!q) return true;
+    var hay = [
+      ayat.id,
+      String(ayat.surah),
+      String(ayat.ayah),
+      ayat.surah + ":" + ayat.ayah,
+      ayat.surahName.bm,
+      ayat.surahName.en,
+      ayat.arabic,
+      ayat.translation && ayat.translation.bm,
+      ayat.translation && ayat.translation.en,
+      ayat.guidance && ayat.guidance.bm,
+      ayat.guidance && ayat.guidance.en,
+      ayat.tafsir && ayat.tafsir.bm,
+      ayat.tafsir && ayat.tafsir.en
+    ]
+      .filter(Boolean)
+      .join("\n")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "");
+
+    var tokens = q.split(/\s+/).filter(Boolean);
+    for (var i = 0; i < tokens.length; i++) {
+      if (hay.indexOf(tokens[i]) === -1) return false;
+    }
+    return true;
+  }
+
+  function filteredAyat() {
+    var q = normalizeQuery(state.query);
+    if (!q) return APP_AYAT.slice();
+    return APP_AYAT.filter(function (a) {
+      return ayatMatches(a, q);
+    });
+  }
+
+  function groupBySurah(list) {
+    var source = list || filteredAyat();
     var groups = [];
     var map = {};
-    APP_AYAT.forEach(function (a) {
+    source.forEach(function (a) {
       if (!map[a.surah]) {
         map[a.surah] = {
           surah: a.surah,
@@ -135,16 +185,46 @@
   function syncTabs() {
     var tabs = document.getElementById("view-tabs");
     var backBtn = document.getElementById("back-btn");
+    var searchBar = document.getElementById("search-bar");
     var isDetail = state.view === "detail";
 
     if (tabs) tabs.hidden = isDetail;
     if (backBtn) backBtn.hidden = !isDetail;
+    if (searchBar) searchBar.hidden = isDetail;
 
     document.querySelectorAll(".view-tab").forEach(function (tab) {
       var active = tab.getAttribute("data-view") === state.view;
       tab.classList.toggle("active", active);
       tab.setAttribute("aria-selected", active ? "true" : "false");
     });
+
+    syncSearchClear();
+  }
+
+  function syncSearchClear() {
+    var clearBtn = document.getElementById("search-clear");
+    var input = document.getElementById("search-input");
+    if (!clearBtn || !input) return;
+    clearBtn.hidden = !String(input.value || "").trim();
+  }
+
+  function searchMetaHtml(total, shown) {
+    if (!normalizeQuery(state.query)) return "";
+    return (
+      '<p class="search-meta" role="status">' +
+      shown +
+      " / " +
+      total +
+      " ayat dijumpai</p>"
+    );
+  }
+
+  function emptySearchHtml() {
+    return (
+      '<p class="search-empty">Tiada ayat yang sepadan dengan &ldquo;' +
+      escapeHtml(state.query.trim()) +
+      "&rdquo;.</p>"
+    );
   }
 
   /* ── Renderers ─────────────────────────────────────────────── */
@@ -204,17 +284,25 @@
   }
 
   function renderList() {
-    return renderAyatRows(groupBySurah(), "list");
+    var matched = filteredAyat();
+    var groups = groupBySurah(matched);
+    var meta = searchMetaHtml(APP_AYAT.length, matched.length);
+    if (!matched.length) return meta + emptySearchHtml();
+    return meta + renderAyatRows(groups, "list");
   }
 
   function renderSummary() {
+    var matched = filteredAyat();
+    var groups = groupBySurah(matched);
     var intro =
       '<p class="page-intro">Ringkasan panduan bagi setiap ayat yang bermula dengan <em>يَا أَيُّهَا الَّذِينَ آمَنُوا</em>. Ketik untuk baca penuh.</p>';
-    return intro + renderAyatRows(groupBySurah(), "summary");
+    var meta = searchMetaHtml(APP_AYAT.length, matched.length);
+    if (!matched.length) return intro + meta + emptySearchHtml();
+    return intro + meta + renderAyatRows(groups, "summary");
   }
 
   function renderNav(mode) {
-    var groups = groupBySurah();
+    var groups = groupBySurah(filteredAyat());
     var prefix = mode === "summary" ? "guide-surah-" : "surah-";
     return groups
       .map(function (g) {
@@ -441,6 +529,34 @@
     });
   }
 
+  function applySearch(query, keepFocus) {
+    state.query = query || "";
+    syncSearchClear();
+    if (state.view === "detail") return;
+
+    var input = document.getElementById("search-input");
+    var hadFocus = keepFocus && input && document.activeElement === input;
+    var selStart = input ? input.selectionStart : null;
+    var selEnd = input ? input.selectionEnd : null;
+
+    if (state.view === "summary") {
+      showSummary(false, false);
+    } else {
+      showList(false, false);
+    }
+
+    if (hadFocus && input) {
+      input.focus();
+      if (selStart != null && selEnd != null) {
+        try {
+          input.setSelectionRange(selStart, selEnd);
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    }
+  }
+
   function bindChrome() {
     document.getElementById("back-btn").addEventListener("click", goBack);
 
@@ -475,6 +591,31 @@
       state.lang.en = e.target.checked;
       saveLang();
       refreshForLang();
+    });
+
+    var searchInput = document.getElementById("search-input");
+    var searchClear = document.getElementById("search-clear");
+
+    searchInput.addEventListener("input", function () {
+      syncSearchClear();
+      var value = searchInput.value;
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(function () {
+        applySearch(value, true);
+      }, 160);
+    });
+
+    searchInput.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") {
+        searchInput.value = "";
+        applySearch("", true);
+      }
+    });
+
+    searchClear.addEventListener("click", function () {
+      searchInput.value = "";
+      applySearch("", false);
+      searchInput.focus();
     });
 
     window.addEventListener("popstate", function (event) {

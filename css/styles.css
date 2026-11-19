@@ -27,6 +27,8 @@
   --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35);
   --transition: 0.25s ease;
   --toolbar-h: 3.25rem;
+  --search-h: 3.1rem;
+  --chrome-h: calc(var(--toolbar-h) + var(--search-h));
 }
 
 *,
@@ -112,21 +114,32 @@ body.is-detail .site-footer {
   margin-top: 0.35rem;
 }
 
-/* ── Toolbar (back + language) ───────────────────────────────── */
-.toolbar {
+/* ── Sticky chrome (toolbar + search) ────────────────────────── */
+.chrome-sticky {
   position: sticky;
   top: 0;
   z-index: 110;
+  background: rgba(10, 31, 26, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+}
+
+body.is-detail .chrome-sticky {
+  border-bottom-color: rgba(201, 162, 39, 0.2);
+}
+
+body.is-detail .search-bar {
+  display: none;
+}
+
+.toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
   min-height: var(--toolbar-h);
-  padding: 0.55rem 1rem;
-  background: rgba(10, 31, 26, 0.94);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
+  padding: 0.55rem 1rem 0.35rem;
 }
 
 .back-btn {
@@ -230,10 +243,104 @@ body.is-detail .site-footer {
   pointer-events: none;
 }
 
+/* ── Search ──────────────────────────────────────────────────── */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem 0.65rem;
+  min-height: var(--search-h);
+}
+
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.85rem;
+  background: var(--color-bg-card);
+  border: 1px solid rgba(201, 162, 39, 0.22);
+  border-radius: 999px;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.search-field:focus-within {
+  border-color: var(--color-gold);
+  box-shadow: 0 0 0 3px var(--color-gold-dim);
+}
+
+.search-icon {
+  flex-shrink: 0;
+  width: 1.05rem;
+  height: 1.05rem;
+  color: var(--color-text-muted);
+}
+
+#search-input {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-ui);
+  font-size: 0.95rem;
+  line-height: 1.3;
+}
+
+#search-input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.9;
+}
+
+#search-input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.search-clear {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-bg-card);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.search-clear:hover {
+  color: var(--color-bg);
+  background: var(--color-gold);
+}
+
+.search-clear[hidden] {
+  display: none;
+}
+
+.search-meta {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  margin-bottom: 1rem;
+}
+
+.search-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  border: 1px dashed rgba(201, 162, 39, 0.25);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.02);
+}
+
 /* ── Surah nav (list only) ───────────────────────────────────── */
 .section-nav {
   position: sticky;
-  top: var(--toolbar-h);
+  top: var(--chrome-h);
   z-index: 100;
   display: flex;
   gap: 0.5rem;
@@ -283,7 +390,11 @@ body.is-detail .site-footer {
 
 .section-block {
   margin-bottom: 2rem;
-  scroll-margin-top: 7rem;
+  scroll-margin-top: calc(var(--chrome-h) + 3.5rem);
+}
+
+body.is-detail .section-block {
+  scroll-margin-top: 5rem;
 }
 
 .section-header {
